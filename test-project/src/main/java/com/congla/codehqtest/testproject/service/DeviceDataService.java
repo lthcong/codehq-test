@@ -11,7 +11,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 @Service
@@ -44,9 +44,18 @@ public class DeviceDataService {
     }
 
     @Transactional
-    public DeviceData saveDeviceData(DeviceData deviceData) {
-        this.saveDeviceDetail(deviceData.getDeviceId(), deviceData.getData());
-        return this.deviceDataRepository.save(deviceData);
+    public LinkedHashMap<String, Object> saveDeviceData(DeviceData deviceData) {
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+
+        if (this.deviceDataRepository.findByDeviceId(deviceData.getDeviceId()) == null) {
+            this.saveDeviceDetail(deviceData.getDeviceId(), deviceData.getData());
+            result.put("device", this.deviceDataRepository.save(deviceData));
+        }
+        else {
+            result.put("Error:", String.format("A device with the same ID (%1$s) was added. Please check your data.", deviceData.getDeviceId()));
+        }
+
+        return result;
     }
 
     @Transactional

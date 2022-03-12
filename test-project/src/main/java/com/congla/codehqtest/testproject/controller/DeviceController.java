@@ -5,6 +5,8 @@ import com.congla.codehqtest.testproject.service.DeviceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
+
 @RestController
 @RequestMapping(path = "/api/devices")
 public class DeviceController {
@@ -13,7 +15,7 @@ public class DeviceController {
     private DeviceDataService deviceDataService;
 
     @PostMapping()
-    private DeviceData save(@RequestBody DeviceData deviceData) {
+    private LinkedHashMap save(@RequestBody DeviceData deviceData) {
         return this.deviceDataService.saveDeviceData(deviceData);
     }
 

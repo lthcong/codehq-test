@@ -30,7 +30,7 @@ public class DeviceDetail {
     @Column(name = "humidity")
     private int humidity;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "detailId", referencedColumnName = "detailId", insertable = false, updatable = false)
+    @OneToOne()
+    @JoinColumn(name = "detailId", referencedColumnName = "detailId")
     private DeviceTemperature temperature;
 }
