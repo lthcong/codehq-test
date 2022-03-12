@@ -22,7 +22,7 @@ public class DeviceController {
     }
 
     @GetMapping(path = "/{deviceId}")
-    private DeviceInfo get(@PathVariable String deviceId) {
+    private LinkedHashMap get(@PathVariable String deviceId) {
         return this.deviceDataService.getDeviceData(deviceId);
     }
 

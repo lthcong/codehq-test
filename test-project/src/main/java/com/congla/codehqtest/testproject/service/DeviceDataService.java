@@ -23,20 +23,28 @@ public class DeviceDataService {
     private DeviceDetailRepository deviceDetailRepository;
 
     @Cacheable("devices")
-    public DeviceInfo<java.util.Map<String, Object>> getDeviceData(String deviceId) {
-        DeviceInfo<java.util.Map<String, Object>> deviceInfo = new DeviceInfo<>();
+    public LinkedHashMap getDeviceData(String deviceId) {
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 
         DeviceData deviceData = this.deviceDataRepository.findByDeviceId(deviceId);
-        deviceInfo.setDeviceId(deviceId);
-        deviceInfo.setLatitude(deviceData.getLatitude());
-        deviceInfo.setLongitude(deviceData.getLongitude());
+        if (deviceData == null) {
+            result.put("Device info", String.format("Cannot find any device with ID %1$s", deviceId));
+        }
+        else {
+            DeviceInfo<java.util.Map<String, Object>> deviceInfo = new DeviceInfo<>();
+            deviceInfo.setDeviceId(deviceId);
+            deviceInfo.setLatitude(deviceData.getLatitude());
+            deviceInfo.setLongitude(deviceData.getLongitude());
 
-        DeviceDetail deviceDetail = this.deviceDetailRepository.findByDeviceId(deviceId);
-        String detailString = deviceDetail.getDetail().replace("=", ":");
-        JSONObject detailJson = new JSONObject(detailString);
-        deviceInfo.setData(detailJson.toMap());
+            DeviceDetail deviceDetail = this.deviceDetailRepository.findByDeviceId(deviceId);
+            String detailString = deviceDetail.getDetail().replace("=", ":");
+            JSONObject detailJson = new JSONObject(detailString);
+            deviceInfo.setData(detailJson.toMap());
 
-        return deviceInfo;
+            result.put("Device info", deviceInfo);
+        }
+
+        return result;
     }
 
     @Transactional
