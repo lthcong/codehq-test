@@ -22,8 +22,8 @@ public class DeviceController {
     }
 
     @GetMapping(path = "/{deviceId}")
-    private LinkedHashMap get(@PathVariable String deviceId) {
-        return this.deviceDataService.getDeviceData(deviceId);
+    private LinkedHashMap get(@PathVariable String deviceId, @RequestParam(required = false) String timestamp) {
+        return this.deviceDataService.getDeviceData(deviceId, timestamp);
     }
 
 

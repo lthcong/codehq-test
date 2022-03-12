@@ -5,13 +5,19 @@ import com.congla.codehqtest.testproject.data.model.DeviceDetail;
 import com.congla.codehqtest.testproject.data.model.DeviceInfo;
 import com.congla.codehqtest.testproject.data.repository.DeviceDataRepository;
 import com.congla.codehqtest.testproject.data.repository.DeviceDetailRepository;
+import com.congla.codehqtest.testproject.data.util.DateUtility;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class DeviceDataService {
@@ -23,7 +29,7 @@ public class DeviceDataService {
     private DeviceDetailRepository deviceDetailRepository;
 
     @Cacheable("devices")
-    public LinkedHashMap getDeviceData(String deviceId) {
+    public LinkedHashMap getDeviceData(String deviceId, String timestamp) {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 
         DeviceData deviceData = this.deviceDataRepository.findByDeviceId(deviceId);
@@ -35,13 +41,17 @@ public class DeviceDataService {
             deviceInfo.setDeviceId(deviceId);
             deviceInfo.setLatitude(deviceData.getLatitude());
             deviceInfo.setLongitude(deviceData.getLongitude());
+            deviceInfo.setData(new LinkedHashMap<>());
+            result.put("device info", deviceInfo);
 
-            DeviceDetail deviceDetail = this.deviceDetailRepository.findByDeviceId(deviceId);
-            String detailString = deviceDetail.getDetail().replace("=", ":");
-            JSONObject detailJson = new JSONObject(detailString);
-            deviceInfo.setData(detailJson.toMap());
-
-            result.put("Device info", deviceInfo);
+            List<DeviceDetail> details;
+            if (timestamp == null) {
+                details = this.deviceDetailRepository.findByDeviceId(deviceId);
+            }
+            else {
+                details = this.deviceDetailRepository.findByDeviceIdAndTimestamp(deviceId, timestamp);
+            }
+            result.put("device details", details);
         }
 
         return result;
@@ -60,16 +70,17 @@ public class DeviceDataService {
                     .longitude(deviceInfo.getLongitude())
                     .build();
             result.put("device", this.deviceDataRepository.save(deviceData));
-
-            DeviceDetail deviceDetail = DeviceDetail.builder()
-                    .deviceId(deviceId)
-                    .detail(deviceInfo.getData().toString())
-                    .build();
-            result.put("detail", this.deviceDetailRepository.save(deviceDetail));
         }
         else {
-            result.put("Error:", String.format("A device with the same ID (%1$s) was added. Please check your data.", deviceId));
+            result.put("device", "Device is already exist.");
         }
+
+        DeviceDetail deviceDetail = DeviceDetail.builder()
+                .deviceId(deviceId)
+                .detail(deviceInfo.getData().toString())
+                .timestamp(DateUtility.getCurrentDateTime())
+                .build();
+        result.put("detail", this.deviceDetailRepository.save(deviceDetail));
 
         return result;
     }

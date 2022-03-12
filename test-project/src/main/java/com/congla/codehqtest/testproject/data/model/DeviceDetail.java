@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
@@ -30,4 +31,7 @@ public class DeviceDetail {
 
     @Column(name = "detail", columnDefinition = "TEXT")
     private String detail;
+
+    @Column(name = "timestamp")
+    private String timestamp;
 }

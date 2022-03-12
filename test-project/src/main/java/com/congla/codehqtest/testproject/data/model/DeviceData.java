@@ -1,8 +1,10 @@
 package com.congla.codehqtest.testproject.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
