@@ -7,6 +7,7 @@ import com.congla.codehqtest.testproject.data.repository.DeviceDataRepository;
 import com.congla.codehqtest.testproject.data.repository.DeviceDetailRepository;
 import com.congla.codehqtest.testproject.data.repository.DeviceTemperatureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -37,6 +38,7 @@ public class DeviceDataService {
         return deviceData;
     }
 
+    @Cacheable("devices")
     public DeviceData getDeviceData(String deviceId) {
         return this.deviceDataRepository.findByDeviceId(deviceId);
     }
