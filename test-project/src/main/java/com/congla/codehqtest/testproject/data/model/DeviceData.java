@@ -3,6 +3,7 @@ package com.congla.codehqtest.testproject.data.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 @Data
@@ -25,7 +26,4 @@ public class DeviceData {
 
     @Column(name = "longitude")
     private float longitude;
-
-    @OneToMany(mappedBy = "deviceId")
-    private Set<DeviceDetail> data;
 }

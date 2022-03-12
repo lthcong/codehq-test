@@ -2,17 +2,16 @@ package com.congla.codehqtest.testproject.service;
 
 import com.congla.codehqtest.testproject.data.model.DeviceData;
 import com.congla.codehqtest.testproject.data.model.DeviceDetail;
-import com.congla.codehqtest.testproject.data.model.DeviceTemperature;
+import com.congla.codehqtest.testproject.data.model.DeviceInfo;
 import com.congla.codehqtest.testproject.data.repository.DeviceDataRepository;
 import com.congla.codehqtest.testproject.data.repository.DeviceDetailRepository;
-import com.congla.codehqtest.testproject.data.repository.DeviceTemperatureRepository;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.LinkedHashMap;
-import java.util.Set;
 
 @Service
 public class DeviceDataService {
@@ -23,54 +22,48 @@ public class DeviceDataService {
     @Autowired
     private DeviceDetailRepository deviceDetailRepository;
 
-    @Autowired
-    private DeviceTemperatureRepository deviceTemperatureRepository;
-
-    public DeviceData getDeviceDataV2(String deviceId) {
-        Set<DeviceDetail> details = this.deviceDetailRepository.findByDeviceId(deviceId);
-        for (DeviceDetail detail : details) {
-            detail.setTemperature(this.deviceTemperatureRepository.findByDetailId(detail.getDetailId()));
-        }
+    @Cacheable("devices")
+    public DeviceInfo<java.util.Map<String, Object>> getDeviceData(String deviceId) {
+        DeviceInfo<java.util.Map<String, Object>> deviceInfo = new DeviceInfo<>();
 
         DeviceData deviceData = this.deviceDataRepository.findByDeviceId(deviceId);
-        deviceData.setData(details);
+        deviceInfo.setDeviceId(deviceId);
+        deviceInfo.setLatitude(deviceData.getLatitude());
+        deviceInfo.setLongitude(deviceData.getLongitude());
 
-        return deviceData;
-    }
+        DeviceDetail deviceDetail = this.deviceDetailRepository.findByDeviceId(deviceId);
+        String detailString = deviceDetail.getDetail().replace("=", ":");
+        JSONObject detailJson = new JSONObject(detailString);
+        deviceInfo.setData(detailJson.toMap());
 
-    @Cacheable("devices")
-    public DeviceData getDeviceData(String deviceId) {
-        return this.deviceDataRepository.findByDeviceId(deviceId);
+        return deviceInfo;
     }
 
     @Transactional
-    public LinkedHashMap<String, Object> saveDeviceData(DeviceData deviceData) {
+    public LinkedHashMap<String, Object> saveDeviceData(DeviceInfo deviceInfo) {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 
-        if (this.deviceDataRepository.findByDeviceId(deviceData.getDeviceId()) == null) {
-            this.saveDeviceDetail(deviceData.getDeviceId(), deviceData.getData());
+        String deviceId = deviceInfo.getDeviceId();
+
+        if (this.deviceDataRepository.findByDeviceId(deviceId) == null) {
+            DeviceData deviceData = DeviceData.builder()
+                    .deviceId(deviceId)
+                    .latitude(deviceInfo.getLatitude())
+                    .longitude(deviceInfo.getLongitude())
+                    .build();
             result.put("device", this.deviceDataRepository.save(deviceData));
+
+            DeviceDetail deviceDetail = DeviceDetail.builder()
+                    .deviceId(deviceId)
+                    .detail(deviceInfo.getData().toString())
+                    .build();
+            result.put("detail", this.deviceDetailRepository.save(deviceDetail));
         }
         else {
-            result.put("Error:", String.format("A device with the same ID (%1$s) was added. Please check your data.", deviceData.getDeviceId()));
+            result.put("Error:", String.format("A device with the same ID (%1$s) was added. Please check your data.", deviceId));
         }
 
         return result;
-    }
-
-    @Transactional
-    public void saveDeviceDetail(String deviceId, Set<DeviceDetail> details) {
-        for (DeviceDetail detail : details) {
-            detail.setDeviceId(deviceId);
-            DeviceDetail newDetail = this.deviceDetailRepository.save(detail);
-            this.saveDeviceTemperature(newDetail.getDetailId(), detail.getTemperature());
-        }
-    }
-
-    @Transactional
-    public void saveDeviceTemperature(int detailId, DeviceTemperature deviceTemperature) {
-        deviceTemperature.setDetailId(detailId);
-        this.deviceTemperatureRepository.save(deviceTemperature);
     }
 
 }

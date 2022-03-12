@@ -10,7 +10,7 @@ import java.util.Set;
 @Repository
 public interface DeviceDetailRepository extends JpaRepository<DeviceDetail, Integer> {
 
-    public Set<DeviceDetail> findByDeviceId(String deviceId);
+    public DeviceDetail findByDeviceId(String deviceId);
 
     public DeviceDetail save(DeviceDetail deviceDetail);
 }

@@ -1,7 +1,9 @@
 package com.congla.codehqtest.testproject.controller;
 
 import com.congla.codehqtest.testproject.data.model.DeviceData;
+import com.congla.codehqtest.testproject.data.model.DeviceInfo;
 import com.congla.codehqtest.testproject.service.DeviceDataService;
+import org.apache.tomcat.util.json.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +17,12 @@ public class DeviceController {
     private DeviceDataService deviceDataService;
 
     @PostMapping()
-    private LinkedHashMap save(@RequestBody DeviceData deviceData) {
-        return this.deviceDataService.saveDeviceData(deviceData);
+    private LinkedHashMap save(@RequestBody DeviceInfo deviceInfo) {
+        return this.deviceDataService.saveDeviceData(deviceInfo);
     }
 
     @GetMapping(path = "/{deviceId}")
-    private DeviceData get(@PathVariable String deviceId) {
+    private DeviceInfo get(@PathVariable String deviceId) {
         return this.deviceDataService.getDeviceData(deviceId);
     }
 

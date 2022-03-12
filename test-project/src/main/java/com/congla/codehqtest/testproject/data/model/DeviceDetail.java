@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 @Data
@@ -27,10 +28,6 @@ public class DeviceDetail {
     @Column(name = "deviceId")
     private String deviceId;
 
-    @Column(name = "humidity")
-    private int humidity;
-
-    @OneToOne()
-    @JoinColumn(name = "detailId", referencedColumnName = "detailId")
-    private DeviceTemperature temperature;
+    @Column(name = "detail", columnDefinition = "TEXT")
+    private String detail;
 }
